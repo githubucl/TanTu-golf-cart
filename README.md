@@ -1,4 +1,4 @@
-# Golf Cart Vision MVP
+# TanTu Golf Cart
 
 高尔夫球包车视觉跟随项目的第一阶段 MVP。
 
