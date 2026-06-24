@@ -83,6 +83,14 @@ PYTHONPATH=src python3 -m golf_cart_vision.main --camera --frames 100
 python3 -m pip install opencv-python mediapipe
 ```
 
+下载 MediaPipe 手部关键点模型：
+
+```bash
+mkdir -p models
+curl -L https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/latest/hand_landmarker.task \
+  -o models/hand_landmarker.task
+```
+
 运行：
 
 ```bash
@@ -97,6 +105,8 @@ PYTHONPATH=src python3 -m golf_cart_vision.main --camera --detector mediapipe
 这里的“识别”不是 YOLO 训练模型，而是 MediaPipe 找到手部 21 个关键点后，程序用规则判断手指是否伸直、指尖之间距离是否足够大。
 
 当前规则不区分手心和手背。只要 MediaPipe 能检测到手部关键点，手心朝摄像头或手背朝摄像头都走同一套分开/合并判断。
+
+注意：`mediapipe 0.10.35` 使用新版 Tasks API，不再提供旧的 `mp.solutions.hands` 入口，所以项目需要 `models/hand_landmarker.task` 这个模型文件。
 
 如果你的 Python 版本无法安装 `mediapipe`，建议新建 Python 3.11 或 3.12 虚拟环境再安装。
 

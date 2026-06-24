@@ -11,6 +11,7 @@ class AppConfig:
     camera_index: int = 0
     max_frames: int = 8
     frame_delay_seconds: float = 0.2
+    mediapipe_model_path: str = "models/hand_landmarker.task"
     mediapipe_min_detection_confidence: float = 0.6
     mediapipe_min_tracking_confidence: float = 0.5
     mock_gesture_sequence: list[str] = field(
@@ -33,6 +34,7 @@ def load_config(path: str | Path = "configs/default.yaml") -> AppConfig:
         camera_index=int(data["camera_index"]),
         max_frames=int(data["max_frames"]),
         frame_delay_seconds=float(data["frame_delay_seconds"]),
+        mediapipe_model_path=str(data["mediapipe_model_path"]),
         mediapipe_min_detection_confidence=float(data["mediapipe_min_detection_confidence"]),
         mediapipe_min_tracking_confidence=float(data["mediapipe_min_tracking_confidence"]),
         mock_gesture_sequence=list(data["mock_gesture_sequence"]),

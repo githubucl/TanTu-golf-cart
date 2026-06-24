@@ -10,5 +10,6 @@ build/
 # Large local assets should stay out of git unless explicitly needed.
 models/*.pt
 models/*.onnx
+models/*.task
 data/sample_videos/*
 !data/sample_videos/README.md

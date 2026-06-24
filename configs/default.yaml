@@ -3,6 +3,7 @@ detector_mode: mock
 camera_index: 0
 max_frames: 8
 frame_delay_seconds: 0.2
+mediapipe_model_path: models/hand_landmarker.task
 mediapipe_min_detection_confidence: 0.6
 mediapipe_min_tracking_confidence: 0.5
 

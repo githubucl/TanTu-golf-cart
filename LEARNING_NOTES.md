@@ -137,6 +137,14 @@ PYTHONPATH=src python3 -m golf_cart_vision.main --camera --detector mediapipe
 
 这一小步开始真正看摄像头里的手，而不是只用 mock detector。
 
+新版 `mediapipe 0.10.35` 使用 Tasks API，需要本地模型文件：
+
+```text
+models/hand_landmarker.task
+```
+
+这个模型文件负责从图像里找手部 21 个关键点。我们的代码不训练模型，只使用这个现成模型输出的关键点，再做分开/合并规则判断。
+
 当前手势约定：
 
 - 手指分开的张开手掌：启动跟随；

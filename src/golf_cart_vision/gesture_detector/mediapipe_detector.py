@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from pathlib import Path
+
 from golf_cart_vision.gesture_detector.detection_types import (
     BoundingBox,
     DetectorOutput,
@@ -18,6 +20,7 @@ class MediaPipeGestureDetector:
 
     def __init__(
         self,
+        model_path: str = "models/hand_landmarker.task",
         min_detection_confidence: float = 0.6,
         min_tracking_confidence: float = 0.5,
     ) -> None:
@@ -29,35 +32,52 @@ class MediaPipeGestureDetector:
                 "python -m pip install mediapipe"
             ) from error
 
-        self._mp_hands = mp.solutions.hands
-        self._hands = self._mp_hands.Hands(
-            static_image_mode=False,
-            max_num_hands=1,
-            min_detection_confidence=min_detection_confidence,
+        model_file = Path(model_path)
+        if not model_file.exists():
+            raise RuntimeError(
+                f"MediaPipe hand model not found: {model_file}. "
+                "Download it with: "
+                "curl -L https://storage.googleapis.com/mediapipe-models/"
+                "hand_landmarker/hand_landmarker/float16/latest/hand_landmarker.task "
+                "-o models/hand_landmarker.task"
+            )
+
+        base_options = mp.tasks.BaseOptions(model_asset_path=str(model_file))
+        options = mp.tasks.vision.HandLandmarkerOptions(
+            base_options=base_options,
+            running_mode=mp.tasks.vision.RunningMode.VIDEO,
+            num_hands=1,
+            min_hand_detection_confidence=min_detection_confidence,
+            min_hand_presence_confidence=min_detection_confidence,
             min_tracking_confidence=min_tracking_confidence,
         )
+        self._landmarker = mp.tasks.vision.HandLandmarker.create_from_options(options)
         self._classifier = SimpleHandGestureClassifier()
+        self._timestamp_ms = 0
 
     def close(self) -> None:
-        self._hands.close()
+        self._landmarker.close()
 
     def detect(self, frame: object | None = None) -> DetectorOutput:
         if frame is None:
             raise ValueError("MediaPipeGestureDetector requires a camera frame")
 
         import cv2
+        import mediapipe as mp
 
         height, width = frame.shape[:2]
         rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-        results = self._hands.process(rgb_frame)
+        mp_image = mp.Image(image_format=mp.ImageFormat.SRGB, data=rgb_frame)
+        self._timestamp_ms += 33
+        results = self._landmarker.detect_for_video(mp_image, self._timestamp_ms)
 
-        if not results.multi_hand_landmarks:
+        if not results.hand_landmarks:
             return DetectorOutput(event=GestureEvent.NO_GESTURE, detections=[])
 
-        hand_landmarks = results.multi_hand_landmarks[0]
+        hand_landmarks = results.hand_landmarks[0]
         landmarks = [
             NormalizedPoint(x=point.x, y=point.y, z=point.z)
-            for point in hand_landmarks.landmark
+            for point in hand_landmarks
         ]
         classification = self._classifier.classify(landmarks)
         bbox = _landmarks_to_bbox(landmarks, width=width, height=height)

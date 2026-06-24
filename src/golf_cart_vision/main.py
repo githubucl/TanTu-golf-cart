@@ -102,6 +102,7 @@ def create_detector(detector_mode: str, config) -> GestureDetector:
 
     if detector_mode == "mediapipe":
         return MediaPipeGestureDetector(
+            model_path=config.mediapipe_model_path,
             min_detection_confidence=config.mediapipe_min_detection_confidence,
             min_tracking_confidence=config.mediapipe_min_tracking_confidence,
         )
