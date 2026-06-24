@@ -1,0 +1,5 @@
+# Stage 1 can run with only the Python standard library.
+# Install these when you want camera windows and pytest.
+opencv-python>=4.10.0
+mediapipe>=0.10.14
+pytest>=8.0

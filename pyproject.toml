@@ -1,0 +1,29 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "golf-cart-vision"
+version = "0.1.0"
+description = "MVP vision-following demo for a golf bag cart."
+requires-python = ">=3.10"
+dependencies = [
+]
+
+[project.optional-dependencies]
+camera = [
+  "opencv-python>=4.10.0",
+]
+gesture = [
+  "mediapipe>=0.10.14",
+]
+dev = [
+  "pytest>=8.0",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]

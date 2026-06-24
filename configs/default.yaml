@@ -1,0 +1,18 @@
+# First-stage MVP config. This stage uses a mock detector, not YOLO.
+detector_mode: mock
+camera_index: 0
+max_frames: 8
+frame_delay_seconds: 0.2
+mediapipe_min_detection_confidence: 0.6
+mediapipe_min_tracking_confidence: 0.5
+
+# "none" means no usable gesture in this frame.
+# "start" means start or resume following.
+# "stop" means stop following. In this MVP, pause and stop share this gesture.
+mock_gesture_sequence:
+  - none
+  - start
+  - none
+  - none
+  - stop
+  - none
