@@ -14,6 +14,7 @@ class AppConfig:
     mediapipe_model_path: str = "models/hand_landmarker.task"
     mediapipe_min_detection_confidence: float = 0.6
     mediapipe_min_tracking_confidence: float = 0.5
+    palm_spread_threshold: float = 0.55
     mock_gesture_sequence: list[str] = field(
         default_factory=lambda: ["none", "start", "none", "none", "stop", "none"]
     )
@@ -37,6 +38,7 @@ def load_config(path: str | Path = "configs/default.yaml") -> AppConfig:
         mediapipe_model_path=str(data["mediapipe_model_path"]),
         mediapipe_min_detection_confidence=float(data["mediapipe_min_detection_confidence"]),
         mediapipe_min_tracking_confidence=float(data["mediapipe_min_tracking_confidence"]),
+        palm_spread_threshold=float(data["palm_spread_threshold"]),
         mock_gesture_sequence=list(data["mock_gesture_sequence"]),
     )
 

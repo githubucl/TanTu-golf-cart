@@ -6,6 +6,7 @@ frame_delay_seconds: 0.2
 mediapipe_model_path: models/hand_landmarker.task
 mediapipe_min_detection_confidence: 0.6
 mediapipe_min_tracking_confidence: 0.5
+palm_spread_threshold: 0.55
 
 # "none" means no usable gesture in this frame.
 # "start" means start or resume following.

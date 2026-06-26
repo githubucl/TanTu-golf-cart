@@ -43,6 +43,20 @@ class SimpleHandGestureClassifierTest(unittest.TestCase):
         self.assertEqual(result.gesture, HandGesture.OPEN_PALM_JOINED)
         self.assertEqual(result.extended_finger_count, 4)
 
+    def test_lower_threshold_makes_spread_easier_to_trigger(self) -> None:
+        classifier = SimpleHandGestureClassifier(spread_threshold=0.3)
+
+        result = classifier.classify(make_open_palm_tip_spacing([0.35, 0.47, 0.53, 0.65]))
+
+        self.assertEqual(result.gesture, HandGesture.OPEN_PALM_SPREAD)
+
+    def test_higher_threshold_makes_joined_easier_to_trigger(self) -> None:
+        classifier = SimpleHandGestureClassifier(spread_threshold=0.4)
+
+        result = classifier.classify(make_open_palm_tip_spacing([0.35, 0.47, 0.53, 0.65]))
+
+        self.assertEqual(result.gesture, HandGesture.OPEN_PALM_JOINED)
+
     def test_mirrored_spread_palm_still_classifies_as_spread(self) -> None:
         classifier = SimpleHandGestureClassifier()
         mirrored_landmarks = [

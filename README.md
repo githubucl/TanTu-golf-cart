@@ -108,6 +108,28 @@ PYTHONPATH=src python3 -m golf_cart_vision.main --camera --detector mediapipe
 
 注意：`mediapipe 0.10.35` 使用新版 Tasks API，不再提供旧的 `mp.solutions.hands` 入口，所以项目需要 `models/hand_landmarker.task` 这个模型文件。
 
+画面左上角会显示调试信息：
+
+```text
+GESTURE: open_palm_spread_start ratio=0.72 threshold=0.55 fingers=4
+```
+
+- `ratio`：当前手指分开比例；
+- `threshold`：分开/合并的分界线；
+- `fingers`：当前判断为伸直的手指数。
+
+如果“张开手指后 START 不够快”，可以降低阈值：
+
+```bash
+PYTHONPATH=src python -m golf_cart_vision.main --camera --detector mediapipe --palm-spread-threshold 0.45
+```
+
+如果“合并手指后 STOP 不够快”，可以提高阈值：
+
+```bash
+PYTHONPATH=src python -m golf_cart_vision.main --camera --detector mediapipe --palm-spread-threshold 0.65
+```
+
 如果你的 Python 版本无法安装 `mediapipe`，建议新建 Python 3.11 或 3.12 虚拟环境再安装。
 
 当前我在你的机器上检查到：

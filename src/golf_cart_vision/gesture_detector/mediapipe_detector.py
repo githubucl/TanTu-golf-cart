@@ -23,6 +23,7 @@ class MediaPipeGestureDetector:
         model_path: str = "models/hand_landmarker.task",
         min_detection_confidence: float = 0.6,
         min_tracking_confidence: float = 0.5,
+        palm_spread_threshold: float = 0.55,
     ) -> None:
         try:
             import mediapipe as mp
@@ -52,7 +53,7 @@ class MediaPipeGestureDetector:
             min_tracking_confidence=min_tracking_confidence,
         )
         self._landmarker = mp.tasks.vision.HandLandmarker.create_from_options(options)
-        self._classifier = SimpleHandGestureClassifier()
+        self._classifier = SimpleHandGestureClassifier(spread_threshold=palm_spread_threshold)
         self._timestamp_ms = 0
 
     def close(self) -> None:
@@ -88,6 +89,10 @@ class MediaPipeGestureDetector:
                 class_name="open_palm_spread_start",
                 confidence=classification.confidence,
                 bbox=bbox,
+                details=_classification_details(
+                    classification=classification,
+                    spread_threshold=self._classifier.spread_threshold,
+                ),
             )
             return DetectorOutput(event=GestureEvent.START_GESTURE, detections=[detection])
 
@@ -97,6 +102,10 @@ class MediaPipeGestureDetector:
                 class_name="open_palm_joined_stop",
                 confidence=classification.confidence,
                 bbox=bbox,
+                details=_classification_details(
+                    classification=classification,
+                    spread_threshold=self._classifier.spread_threshold,
+                ),
             )
             return DetectorOutput(event=GestureEvent.STOP_GESTURE, detections=[detection])
 
@@ -105,6 +114,10 @@ class MediaPipeGestureDetector:
             class_name="unknown_hand",
             confidence=classification.confidence,
             bbox=bbox,
+            details=_classification_details(
+                classification=classification,
+                spread_threshold=self._classifier.spread_threshold,
+            ),
         )
         return DetectorOutput(event=GestureEvent.NO_GESTURE, detections=[detection])
 
@@ -123,3 +136,15 @@ def _landmarks_to_bbox(
     x2 = min(width - 1, int(max(xs)) + padding_px)
     y2 = min(height - 1, int(max(ys)) + padding_px)
     return BoundingBox(x1=x1, y1=y1, x2=x2, y2=y2)
+
+
+def _classification_details(
+    classification,
+    spread_threshold: float,
+) -> dict[str, float | int | str]:
+    return {
+        "gesture": classification.gesture.value,
+        "extended_fingers": classification.extended_finger_count,
+        "spread_ratio": round(classification.spread_ratio, 3),
+        "spread_threshold": round(spread_threshold, 3),
+    }

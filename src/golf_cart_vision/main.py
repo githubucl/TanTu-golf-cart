@@ -50,6 +50,15 @@ def parse_args() -> argparse.Namespace:
         default="Golf Cart Vision MVP",
         help="Camera demo window name.",
     )
+    parser.add_argument(
+        "--palm-spread-threshold",
+        type=float,
+        default=None,
+        help=(
+            "Override the spread/joined palm threshold. "
+            "Lower values trigger START sooner; higher values trigger STOP sooner."
+        ),
+    )
     return parser.parse_args()
 
 
@@ -62,7 +71,11 @@ def main() -> None:
         raise SystemExit("The mediapipe detector needs camera frames. Run with --camera.")
 
     try:
-        detector = create_detector(detector_mode=detector_mode, config=config)
+        detector = create_detector(
+            detector_mode=detector_mode,
+            config=config,
+            palm_spread_threshold=args.palm_spread_threshold,
+        )
     except RuntimeError as error:
         raise SystemExit(str(error)) from error
 
@@ -96,7 +109,11 @@ def main() -> None:
     )
 
 
-def create_detector(detector_mode: str, config) -> GestureDetector:
+def create_detector(
+    detector_mode: str,
+    config,
+    palm_spread_threshold: float | None = None,
+) -> GestureDetector:
     if detector_mode == "mock":
         return MockGestureDetector(config.mock_gesture_sequence)
 
@@ -105,6 +122,11 @@ def create_detector(detector_mode: str, config) -> GestureDetector:
             model_path=config.mediapipe_model_path,
             min_detection_confidence=config.mediapipe_min_detection_confidence,
             min_tracking_confidence=config.mediapipe_min_tracking_confidence,
+            palm_spread_threshold=(
+                config.palm_spread_threshold
+                if palm_spread_threshold is None
+                else palm_spread_threshold
+            ),
         )
 
     raise ValueError(f"Unsupported detector_mode: {detector_mode}")

@@ -29,6 +29,17 @@ def draw_detections(
             2,
         )
 
+    gesture_text = _gesture_debug_text(detections)
+    cv2.putText(
+        frame,
+        gesture_text,
+        (20, 110),
+        cv2.FONT_HERSHEY_SIMPLEX,
+        0.65,
+        (255, 255, 255),
+        2,
+    )
+
     cv2.putText(
         frame,
         f"STATE: {state}",
@@ -50,3 +61,21 @@ def draw_detections(
         2,
     )
     return frame
+
+
+def _gesture_debug_text(detections: list[GestureDetection]) -> str:
+    if not detections:
+        return "GESTURE: no_hand"
+
+    detection = detections[0]
+    ratio = detection.details.get("spread_ratio")
+    threshold = detection.details.get("spread_threshold")
+    fingers = detection.details.get("extended_fingers")
+
+    if ratio is None or threshold is None or fingers is None:
+        return f"GESTURE: {detection.class_name}"
+
+    return (
+        f"GESTURE: {detection.class_name} "
+        f"ratio={ratio} threshold={threshold} fingers={fingers}"
+    )

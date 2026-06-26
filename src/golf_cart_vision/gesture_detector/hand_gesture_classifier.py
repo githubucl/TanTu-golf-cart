@@ -40,6 +40,10 @@ class SimpleHandGestureClassifier:
     def __init__(self, spread_threshold: float = 0.55) -> None:
         self._spread_threshold = spread_threshold
 
+    @property
+    def spread_threshold(self) -> float:
+        return self._spread_threshold
+
     def classify(self, landmarks: list[NormalizedPoint]) -> HandGestureResult:
         if len(landmarks) != 21:
             raise ValueError(f"Expected 21 hand landmarks, got {len(landmarks)}")
