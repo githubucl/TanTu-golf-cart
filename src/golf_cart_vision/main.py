@@ -8,6 +8,7 @@ from pathlib import Path
 from golf_cart_vision.command_publisher.mock_publisher import MockCommandPublisher
 from golf_cart_vision.config.settings import load_config
 from golf_cart_vision.gesture_detector.detection_types import DetectorOutput
+from golf_cart_vision.gesture_detector.event_stabilizer import GestureEventStabilizer
 from golf_cart_vision.gesture_detector.mediapipe_detector import MediaPipeGestureDetector
 from golf_cart_vision.gesture_detector.mock_detector import MockGestureDetector
 from golf_cart_vision.state_machine.follow_state_machine import FollowStateMachine
@@ -59,6 +60,12 @@ def parse_args() -> argparse.Namespace:
             "Lower values trigger START sooner; higher values trigger STOP sooner."
         ),
     )
+    parser.add_argument(
+        "--gesture-confirmation-frames",
+        type=int,
+        default=None,
+        help="How many matching frames are required before a gesture changes state.",
+    )
     return parser.parse_args()
 
 
@@ -81,12 +88,21 @@ def main() -> None:
 
     state_machine = FollowStateMachine()
     publisher = MockCommandPublisher()
+    stabilizer = GestureEventStabilizer(
+        confirmation_frames=(
+            config.gesture_confirmation_frames
+            if args.gesture_confirmation_frames is None
+            else args.gesture_confirmation_frames
+        ),
+        missing_tolerance_frames=config.gesture_missing_tolerance_frames,
+    )
 
     if args.camera:
         max_frames = args.frames
         try:
             run_camera_demo(
                 detector=detector,
+                stabilizer=stabilizer,
                 state_machine=state_machine,
                 publisher=publisher,
                 camera_index=config.camera_index,
@@ -102,6 +118,7 @@ def main() -> None:
     max_frames = args.frames if args.frames is not None else config.max_frames
     run_console_demo(
         detector=detector,
+        stabilizer=stabilizer,
         state_machine=state_machine,
         publisher=publisher,
         max_frames=max_frames,
@@ -134,6 +151,7 @@ def create_detector(
 
 def run_console_demo(
     detector: GestureDetector,
+    stabilizer: GestureEventStabilizer,
     state_machine: FollowStateMachine,
     publisher: MockCommandPublisher,
     max_frames: int,
@@ -143,11 +161,13 @@ def run_console_demo(
 
     for frame_index in range(max_frames):
         detector_output = detector.detect(frame=None)
-        transition = state_machine.handle_event(detector_output.event)
+        stabilizer_output = stabilizer.update(detector_output.event)
+        transition = state_machine.handle_event(stabilizer_output.stable_event)
         publisher.publish(transition.command)
         visualizer.render(
             frame_index=frame_index,
             detector_output=detector_output,
+            stabilizer_output=stabilizer_output,
             state=transition.new_state.value,
             command=transition.command,
         )
@@ -156,6 +176,7 @@ def run_console_demo(
 
 def run_camera_demo(
     detector: GestureDetector,
+    stabilizer: GestureEventStabilizer,
     state_machine: FollowStateMachine,
     publisher: MockCommandPublisher,
     camera_index: int,
@@ -174,12 +195,14 @@ def run_camera_demo(
     with OpenCVCamera(camera_index=camera_index) as camera:
         for frame_index, frame in enumerate(camera.frames()):
             detector_output = detector.detect(frame=frame)
-            transition = state_machine.handle_event(detector_output.event)
+            stabilizer_output = stabilizer.update(detector_output.event)
+            transition = state_machine.handle_event(stabilizer_output.stable_event)
             publisher.publish(transition.command)
 
             output_frame = draw_detections(
                 frame=frame,
                 detections=detector_output.detections,
+                stabilizer_output=stabilizer_output,
                 state=transition.new_state.value,
                 command=transition.command,
             )

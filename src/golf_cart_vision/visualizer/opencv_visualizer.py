@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from golf_cart_vision.gesture_detector.detection_types import GestureDetection
+from golf_cart_vision.gesture_detector.event_stabilizer import StabilizerOutput
 from golf_cart_vision.state_machine.follow_state_machine import MockCommand
 
 
@@ -8,6 +9,7 @@ def draw_detections(
     frame: object,
     detections: list[GestureDetection],
     state: str,
+    stabilizer_output: StabilizerOutput | None = None,
     command: MockCommand | None = None,
 ) -> object:
     """Draws mock detections and current follow status on an OpenCV frame."""
@@ -34,6 +36,17 @@ def draw_detections(
         frame,
         gesture_text,
         (20, 110),
+        cv2.FONT_HERSHEY_SIMPLEX,
+        0.65,
+        (255, 255, 255),
+        2,
+    )
+
+    filter_text = _stabilizer_debug_text(stabilizer_output)
+    cv2.putText(
+        frame,
+        filter_text,
+        (20, 145),
         cv2.FONT_HERSHEY_SIMPLEX,
         0.65,
         (255, 255, 255),
@@ -78,4 +91,16 @@ def _gesture_debug_text(detections: list[GestureDetection]) -> str:
     return (
         f"GESTURE: {detection.class_name} "
         f"ratio={ratio} threshold={threshold} fingers={fingers}"
+    )
+
+
+def _stabilizer_debug_text(stabilizer_output: StabilizerOutput | None) -> str:
+    if stabilizer_output is None:
+        return "FILTER: off"
+
+    return (
+        f"FILTER: raw={stabilizer_output.raw_event.value} "
+        f"stable={stabilizer_output.stable_event.value} "
+        f"confirm={stabilizer_output.candidate_count}/"
+        f"{stabilizer_output.confirmation_frames}"
     )

@@ -130,6 +130,24 @@ PYTHONPATH=src python -m golf_cart_vision.main --camera --detector mediapipe --p
 PYTHONPATH=src python -m golf_cart_vision.main --camera --detector mediapipe --palm-spread-threshold 0.65
 ```
 
+程序默认还会做连续帧确认：同一个手势需要连续出现 2 帧，才会交给状态机。画面上会显示：
+
+```text
+FILTER: raw=START_GESTURE stable=NO_GESTURE confirm=1/2
+```
+
+如果你想临时测试更灵敏的单帧模式：
+
+```bash
+PYTHONPATH=src python -m golf_cart_vision.main --camera --detector mediapipe --gesture-confirmation-frames 1
+```
+
+如果你想更稳一点，可以提高到 3 帧：
+
+```bash
+PYTHONPATH=src python -m golf_cart_vision.main --camera --detector mediapipe --gesture-confirmation-frames 3
+```
+
 如果你的 Python 版本无法安装 `mediapipe`，建议新建 Python 3.11 或 3.12 虚拟环境再安装。
 
 当前我在你的机器上检查到：

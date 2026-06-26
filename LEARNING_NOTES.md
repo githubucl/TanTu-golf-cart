@@ -219,7 +219,58 @@ GESTURE: ... ratio=0.72 threshold=0.55 fingers=4
 PYTHONPATH=src python -m golf_cart_vision.main --camera --detector mediapipe --palm-spread-threshold 0.45
 ```
 
-这个阶段的目标不是一次调到完美，而是先让你能看到模型内部的判断依据。下一步才适合加入“连续帧确认”和“状态防抖”，让真实产品更稳。
+这个阶段的目标不是一次调到完美，而是先让你能看到模型内部的判断依据。下一小步会在这个基础上加入“连续帧确认”和“状态防抖”，让判断更稳。
+
+## 第三阶段第 1 小步：连续帧确认
+
+现在手势事件不会直接进入状态机，而是先经过 `GestureEventStabilizer`。
+
+数据流变成：
+
+```text
+MediaPipe 原始手势 -> 连续帧确认 -> 状态机 -> mock command
+```
+
+为什么要这样做：
+
+- 视觉模型可能某一帧误判；
+- 手掌张合时关键点会抖动；
+- 真实车不能因为一帧误判就启动或停止。
+
+默认规则：
+
+```text
+同一个手势连续出现 2 帧 -> 才认为这个手势有效
+允许中间漏掉 1 帧 -> 避免 MediaPipe 偶发丢手导致确认被打断
+```
+
+画面上会显示：
+
+```text
+FILTER: raw=START_GESTURE stable=NO_GESTURE confirm=1/2
+```
+
+大白话解释：
+
+- `raw` 是 MediaPipe 这一帧看到的手势；
+- `stable` 是真正交给状态机的手势；
+- `confirm=1/2` 表示已经看到 1 帧，还差 1 帧才确认。
+
+如果要更灵敏：
+
+```bash
+PYTHONPATH=src python -m golf_cart_vision.main --camera --detector mediapipe --gesture-confirmation-frames 1
+```
+
+如果要更稳：
+
+```bash
+PYTHONPATH=src python -m golf_cart_vision.main --camera --detector mediapipe --gesture-confirmation-frames 3
+```
+
+真实球车限制：
+
+这还只是最小防抖。真实底盘还需要急停优先级、目标锁定、距离判断、通信心跳和硬件级安全保护。
 
 ### 为什么先用 MediaPipe 而不是 YOLO
 
