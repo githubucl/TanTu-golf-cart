@@ -219,16 +219,16 @@ GESTURE: ... ratio=0.72 threshold=0.55 fingers=4
 PYTHONPATH=src python -m golf_cart_vision.main --camera --detector mediapipe --palm-spread-threshold 0.45
 ```
 
-这个阶段的目标不是一次调到完美，而是先让你能看到模型内部的判断依据。下一小步会在这个基础上加入“连续帧确认”和“状态防抖”，让判断更稳。
+这个阶段的目标不是一次调到完美，而是先让你能看到模型内部的判断依据。下一小步会在这个基础上加入“持续时间确认”和“状态防抖”，让判断更稳。
 
-## 第三阶段第 1 小步：连续帧确认
+## 第三阶段第 1 小步：持续时间确认
 
 现在手势事件不会直接进入状态机，而是先经过 `GestureEventStabilizer`。
 
 数据流变成：
 
 ```text
-MediaPipe 原始手势 -> 连续帧确认 -> 状态机 -> mock command
+MediaPipe 原始手势 -> 持续时间确认 -> 状态机 -> mock command
 ```
 
 为什么要这样做：
@@ -240,32 +240,33 @@ MediaPipe 原始手势 -> 连续帧确认 -> 状态机 -> mock command
 默认规则：
 
 ```text
-同一个手势连续出现 2 帧 -> 才认为这个手势有效
-允许中间漏掉 1 帧 -> 避免 MediaPipe 偶发丢手导致确认被打断
+同一个手势持续约 0.2 秒 -> 才认为这个手势有效
+允许中间短暂漏掉 0.1 秒 -> 避免 MediaPipe 偶发丢手导致确认被打断
 ```
 
 画面上会显示：
 
 ```text
-FILTER: raw=START_GESTURE stable=NO_GESTURE confirm=1/2
+FILTER: raw=START_GESTURE stable=NO_GESTURE confirm=0.12/0.20s frames=4
 ```
 
 大白话解释：
 
 - `raw` 是 MediaPipe 这一帧看到的手势；
 - `stable` 是真正交给状态机的手势；
-- `confirm=1/2` 表示已经看到 1 帧，还差 1 帧才确认。
+- `confirm=0.12/0.20s` 表示这个手势已经持续 0.12 秒，还没达到 0.20 秒；
+- `frames=4` 表示当前候选手势已经累计出现 4 帧。
 
 如果要更灵敏：
 
 ```bash
-PYTHONPATH=src python -m golf_cart_vision.main --camera --detector mediapipe --gesture-confirmation-frames 1
+PYTHONPATH=src python -m golf_cart_vision.main --camera --detector mediapipe --gesture-confirmation-seconds 0.1
 ```
 
 如果要更稳：
 
 ```bash
-PYTHONPATH=src python -m golf_cart_vision.main --camera --detector mediapipe --gesture-confirmation-frames 3
+PYTHONPATH=src python -m golf_cart_vision.main --camera --detector mediapipe --gesture-confirmation-seconds 0.3
 ```
 
 真实球车限制：

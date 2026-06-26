@@ -101,6 +101,7 @@ def _stabilizer_debug_text(stabilizer_output: StabilizerOutput | None) -> str:
     return (
         f"FILTER: raw={stabilizer_output.raw_event.value} "
         f"stable={stabilizer_output.stable_event.value} "
-        f"confirm={stabilizer_output.candidate_count}/"
-        f"{stabilizer_output.confirmation_frames}"
+        f"confirm={stabilizer_output.candidate_elapsed_seconds:.2f}/"
+        f"{stabilizer_output.confirmation_seconds:.2f}s "
+        f"frames={stabilizer_output.candidate_count}"
     )

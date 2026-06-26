@@ -15,8 +15,8 @@ class AppConfig:
     mediapipe_min_detection_confidence: float = 0.6
     mediapipe_min_tracking_confidence: float = 0.5
     palm_spread_threshold: float = 0.55
-    gesture_confirmation_frames: int = 2
-    gesture_missing_tolerance_frames: int = 1
+    gesture_confirmation_seconds: float = 0.2
+    gesture_missing_tolerance_seconds: float = 0.1
     mock_gesture_sequence: list[str] = field(
         default_factory=lambda: ["none", "start", "start", "none", "none", "stop", "stop", "none"]
     )
@@ -41,8 +41,8 @@ def load_config(path: str | Path = "configs/default.yaml") -> AppConfig:
         mediapipe_min_detection_confidence=float(data["mediapipe_min_detection_confidence"]),
         mediapipe_min_tracking_confidence=float(data["mediapipe_min_tracking_confidence"]),
         palm_spread_threshold=float(data["palm_spread_threshold"]),
-        gesture_confirmation_frames=int(data["gesture_confirmation_frames"]),
-        gesture_missing_tolerance_frames=int(data["gesture_missing_tolerance_frames"]),
+        gesture_confirmation_seconds=float(data["gesture_confirmation_seconds"]),
+        gesture_missing_tolerance_seconds=float(data["gesture_missing_tolerance_seconds"]),
         mock_gesture_sequence=list(data["mock_gesture_sequence"]),
     )
 

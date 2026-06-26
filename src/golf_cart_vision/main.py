@@ -61,10 +61,10 @@ def parse_args() -> argparse.Namespace:
         ),
     )
     parser.add_argument(
-        "--gesture-confirmation-frames",
-        type=int,
+        "--gesture-confirmation-seconds",
+        type=float,
         default=None,
-        help="How many matching frames are required before a gesture changes state.",
+        help="How long the same gesture must persist before it changes state.",
     )
     return parser.parse_args()
 
@@ -89,12 +89,12 @@ def main() -> None:
     state_machine = FollowStateMachine()
     publisher = MockCommandPublisher()
     stabilizer = GestureEventStabilizer(
-        confirmation_frames=(
-            config.gesture_confirmation_frames
-            if args.gesture_confirmation_frames is None
-            else args.gesture_confirmation_frames
+        confirmation_seconds=(
+            config.gesture_confirmation_seconds
+            if args.gesture_confirmation_seconds is None
+            else args.gesture_confirmation_seconds
         ),
-        missing_tolerance_frames=config.gesture_missing_tolerance_frames,
+        missing_tolerance_seconds=config.gesture_missing_tolerance_seconds,
     )
 
     if args.camera:

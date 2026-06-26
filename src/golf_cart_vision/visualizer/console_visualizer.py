@@ -23,7 +23,9 @@ class ConsoleVisualizer:
         print(
             f"[FRAME {frame_index:03d}] "
             f"raw={raw_gesture} stable={stable_gesture} "
-            f"confirm={stabilizer_output.candidate_count}/{stabilizer_output.confirmation_frames} "
+            f"confirm={stabilizer_output.candidate_elapsed_seconds:.2f}/"
+            f"{stabilizer_output.confirmation_seconds:.2f}s "
+            f"frames={stabilizer_output.candidate_count} "
             f"detections={detection_count} "
             f"state={state} command={command_text}"
         )

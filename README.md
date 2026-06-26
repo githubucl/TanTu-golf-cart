@@ -130,22 +130,22 @@ PYTHONPATH=src python -m golf_cart_vision.main --camera --detector mediapipe --p
 PYTHONPATH=src python -m golf_cart_vision.main --camera --detector mediapipe --palm-spread-threshold 0.65
 ```
 
-程序默认还会做连续帧确认：同一个手势需要连续出现 2 帧，才会交给状态机。画面上会显示：
+程序默认还会做持续时间确认：同一个手势需要持续约 `0.2` 秒，才会交给状态机。画面上会显示：
 
 ```text
-FILTER: raw=START_GESTURE stable=NO_GESTURE confirm=1/2
+FILTER: raw=START_GESTURE stable=NO_GESTURE confirm=0.12/0.20s frames=4
 ```
 
-如果你想临时测试更灵敏的单帧模式：
+如果你想更灵敏，可以改成 `0.1` 秒：
 
 ```bash
-PYTHONPATH=src python -m golf_cart_vision.main --camera --detector mediapipe --gesture-confirmation-frames 1
+PYTHONPATH=src python -m golf_cart_vision.main --camera --detector mediapipe --gesture-confirmation-seconds 0.1
 ```
 
-如果你想更稳一点，可以提高到 3 帧：
+如果你想更稳一点，可以改成 `0.3` 秒：
 
 ```bash
-PYTHONPATH=src python -m golf_cart_vision.main --camera --detector mediapipe --gesture-confirmation-frames 3
+PYTHONPATH=src python -m golf_cart_vision.main --camera --detector mediapipe --gesture-confirmation-seconds 0.3
 ```
 
 如果你的 Python 版本无法安装 `mediapipe`，建议新建 Python 3.11 或 3.12 虚拟环境再安装。
@@ -189,4 +189,4 @@ PYTHONPATH=src python -m unittest discover tests
 
 ## 下一步
 
-下一小阶段建议加入“连续帧确认”。真实系统不能一帧看到手势就切状态，应该连续多帧确认后再输出命令，减少误触发。
+下一小阶段建议区分启动/停止的确认时间。真实系统里启动跟随应该更保守，停止跟随应该更快响应。
